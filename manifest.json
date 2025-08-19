@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "RDP Chat Control",
+  "version": "0.2.0",
+  "description": "DevTools chat to control tabs/pages; Firefox uses RDP-backed devtools APIs.",
+  "devtools_page": "devtools.html",
+
+  "permissions": ["tabs", "activeTab", "storage"],
+  "host_permissions": ["<all_urls>"],
+
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]    // Firefox temp add-ons need this; Chrome will just warn.
+  }
+}

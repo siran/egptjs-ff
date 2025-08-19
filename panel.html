@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; margin: 10px; }
+  #log { height: 300px; overflow:auto; border:1px solid #ccc; padding:8px; }
+  #cmd { width: 100%; box-sizing: border-box; margin-top:8px; }
+  .msg { margin: 0 0 6px 0; }
+  .me { color:#0366d6; }
+  .sys { color:#555; }
+  .err { color:#b00020; }
+</style>
+<div id="log" aria-live="polite"></div>
+<input id="cmd" placeholder='help | eval document.title | goto https://example.com | newtab https://… | open "Docs" | click "Run" | type "input[name=q]" hello | tab list|switch 3|next|prev|close [id] | win new [url] | back|forward|reload | scroll 600|top|bottom'/>
+<script src="panel.js"></script>
