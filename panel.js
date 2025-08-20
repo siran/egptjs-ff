@@ -53,9 +53,21 @@ async function newTab(url) {
 }
 
 async function nav(url) {
-  await API.runtime.sendMessage({ t: "goto", tabId: currentTabId, url });
-  post("sys", `navigated → ${url}`);
+  const r = await API.runtime.sendMessage({ t: "goto", tabId: currentTabId, url });
+  if (r?.ok) {
+    post("sys", `navigated → ${url}`);
+    return;
+  }
+  // Fallback: try in-page navigation (works even if bg was reloaded)
+  const js = `location.href = ${JSON.stringify(url)}`;
+  const out = await evalInPage(js);
+  if (out === null && !(r?.ok)) {
+    post("err", `goto failed: ${r?.reason || "unknown"}; eval fallback may also have failed.`);
+  } else {
+    post("sys", `navigated (fallback) → ${url}`);
+  }
 }
+
 
 async function listTabs() {
   const tabs = await API.runtime.sendMessage({ t: "listTabs" });

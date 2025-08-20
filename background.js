@@ -54,6 +54,16 @@ API.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return sendResponse({ ok: true });   // respond to avoid “went out of scope”
     }
 
+    if (msg?.t === "goto") {
+        try {
+            await API.tabs.update(msg.tabId, { url: msg.url });
+            return sendResponse({ ok: true });
+        } catch (e) {
+            return sendResponse({ ok: false, reason: String(e) });
+        }
+    }
+
+
     // If not handled, answer explicitly to avoid warnings
     return sendResponse({ ok: false, reason: "unhandled" });
   })().catch((e) => sendResponse({ ok: false, reason: String(e) }));
