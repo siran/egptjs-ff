@@ -1,120 +1,134 @@
-# RDP Chat Control Extension
+# 🧠 Brain Browser Controller
 
-A **minimal Firefox/Chromium DevTools extension** that opens a chat-like panel inside DevTools, letting you **control the browser and page with simple commands**.
-
-Built for **long-term MV3 compatibility**:
-
-* **Chromium** uses `background.service_worker`.
-* **Firefox** uses `background.scripts` (event page) for temporary installs.
-
-All page interactions are routed through Firefox’s **Remote Debugging Protocol (RDP)** (via `devtools.inspectedWindow.eval`), giving near–full browser control.
+A developer tool that extends DevTools with a **Brain panel** to control ChatGPT and the browser itself.
+You can type commands directly into the panel, automate ChatGPT, and receive streaming responses.
 
 ---
 
 ## ✨ Features
 
-* **Navigation**
+- **ChatGPT integration**
+  - Type messages directly into ChatGPT’s input (fixed sync).
+  - Auto-clicks the **send button** to submit.
+  - Streams assistant replies live back into the Brain panel.
+  - Watcher automatically waits for next assistant reply (no manual “get” required).
 
-  * `goto URL` — navigate current tab.
-  * `newtab URL` — open a new tab.
-  * `win new URL` — open a new window.
-  * `back`, `forward`, `reload`.
+- **Browser control**
+  - `goto <url>` — navigate reliably (fixed false error bug).
+  - `click <selector>` — click buttons or links.
+  - `say <text>` — type text into ChatGPT input and auto-send.
 
-* **Tab control**
-
-  * `tab list` — list open tabs.
-  * `tab switch N` — activate tab by index.
-  * `tab next`, `tab prev` — cycle through tabs.
-  * `tab close [id]` — close a tab (default: current).
-
-* **DOM control**
-
-  * `click "text"` — click element by visible text (button, link, label).
-  * `open "text"` — open link by visible text in a new tab.
-  * `type "selector" text` — type text into an input or contentEditable element.
-  * `eval JS` — run arbitrary JavaScript in the page context.
-
-* **Page actions**
-
-  * `scroll 600` — scroll down by 600px.
-  * `scroll top` / `scroll bottom`.
+- **Developer panel**
+  - Appears as **RDP Chat** tab inside browser DevTools.
+  - Full log of all commands and results.
+  - Clean error handling.
 
 ---
 
-## 🛠 Installation
+## 🚀 Installation
 
-### Firefox (Developer Edition / Nightly)
-
-1. Open `about:debugging` → **This Firefox**.
-2. Click **Load Temporary Add-on…** → select `manifest.json`.
-3. Open DevTools (F12) on any page → find **RDP Chat** panel.
-
-⚠️ Note: Firefox disables `background.service_worker` for temporary add-ons. This repo includes both `background.scripts` (for Firefox dev) and `service_worker` (for Chromium).
-
-### Chromium (Chrome / Edge / Brave)
-
-1. Go to `chrome://extensions`.
-2. Enable **Developer mode**.
-3. Click **Load unpacked** → select repo folder.
-4. Open DevTools → **RDP Chat** panel.
+1. Clone this repo.
+2. Load it as an **unpacked extension** in Chrome/Firefox:
+   - Visit `chrome://extensions`
+   - Enable **Developer mode**
+   - Click **Load unpacked**
+   - Select this repo folder
+3. Open DevTools → **RDP Chat** tab.
+4. Issue commands.
 
 ---
 
-## 💬 Example Commands
+## 📝 Example Session
 
-```txt
-eval document.title
-goto https://example.org
-newtab https://mozilla.org
-open "Documentation"
-click "Run"
-type "input[name=q]" Hello world
-tab list
-tab switch 3
-tab close
-scroll bottom
-```
+```bash
+goto "https://chat.openai.com"
+brain set https://chat.openai.com/c/xxxx
+brain say "Hello, world!"
+````
+
+* Message is typed into ChatGPT’s input box.
+* The **send button is auto-clicked**.
+* Assistant’s reply streams back into the Brain panel.
 
 ---
 
-## 🔍 How it Works
+## 🔧 Command Reference
 
-* A **DevTools panel** provides a chat-style UI.
-* Commands are parsed and executed:
+**`goto "<url>"`**
+Navigate the current tab to a new URL.
 
-  * **Browser-level actions** (`tabs.*`, `windows.*`) are handled by the background script.
-  * **Page-level actions** (`eval`, `click`, `type`, `scroll`) are executed in the inspected tab via `devtools.inspectedWindow.eval`.
-* Firefox pipes these through its **RDP backend**. Chromium uses **CDP**, but both work transparently with the same extension code.
+* Example:
+
+  ```
+  goto "https://yahoo.com"
+  ```
+
+**`click "<selector>"`**
+Click an element using a CSS selector.
+
+* Example:
+
+  ```
+  click "button.send"
+  ```
+
+**`say "<text>"`**
+Type into ChatGPT’s input and auto-submit.
+
+* Example:
+
+  ```
+  say "again, hi beibi"
+  ```
+
+**`brain set <url>`**
+Attach Brain watcher to a ChatGPT conversation.
+
+* Example:
+
+  ```
+  brain set https://chat.openai.com/c/xxxx
+  ```
+
+**`brain say "<text>"`**
+Send a message into the active ChatGPT thread (with auto-send + streaming).
+
+* Example:
+
+  ```
+  brain say "What is the meaning of life?"
+  ```
 
 ---
 
-## 📦 Repo Structure
+## ⚙️ Development Notes
 
-```
-manifest.json      # Extension manifest (MV3)
-background.js      # Background event page / service worker
-devtools.html      # DevTools entry
-devtools.js        # Creates RDP Chat panel
-panel.html         # Chat UI
-panel.js           # Command parser + handlers
-README.md          # This file
-```
+* Fixed issue where input text only appeared after reload (textarea now updated via `input` event).
+* Fixed `goto` error reporting: only errors if navigation really failed.
+* Added watcher that auto-streams assistant replies to panel.
+* Command history navigation with ↑ and ↓ supported in Brain panel.
+* Clean separation of commands in `panel.js`.
 
 ---
 
-## 🚀 Roadmap
+## 💡 Roadmap
 
-* [ ] Network logging commands (`net on/off`, `net list`).
-* [ ] Element picker for `click`/`open`.
-* [ ] Command history (up/down arrows).
-* [ ] Scriptable macros.
+* More robust `click` selectors (auto-detect buttons/inputs).
+* Screenshot and DOM capture commands.
+* Scripted macros (`brain run script.js`).
+* Extend into **agent-like behavior**:
+
+  ```
+  agent "solve the mystery of the universe"
+  ```
+
+  This would trigger a back-and-forth loop between ChatGPT and Brain until the task is deemed complete.
+* Smarter history search (`↑` to recall previous commands, `Ctrl+R` style search).
+* Full bi-directional sync with ChatGPT thread state.
 
 ---
 
 ## ⚖️ License
 
-This is free and unencumbered software released into the public domain.
-
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
-
-For more information, please refer to [http://unlicense.org/](http://unlicense.org/)
+**UNLICENSE** — Public Domain.
+Do whatever you want with it.
